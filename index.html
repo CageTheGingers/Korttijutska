@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Card Pack Open Effect</title>
+  <title>Card Pack Rip Open Effect</title>
   
   <!-- Include GSAP via CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.0/gsap.min.js"></script>
@@ -36,43 +36,39 @@
       height: 100%;
       position: relative;
       overflow: hidden;
+      border-radius: 10px;
+      background-color: #2c3e50; /* Card pack color */
+      transform-style: preserve-3d;
+      transform: perspective(1000px); /* 3D perspective */
     }
 
-    .front, .back {
+    .cardSide {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: #2c3e50;
-      border: 2px solid #34495e;
-      border-radius: 10px;
-      transform-origin: center;
+      background-color: #34495e; /* Color of the card pack */
+      backface-visibility: hidden; /* Prevent the back side from being visible */
       transition: transform 0.3s ease-out;
     }
 
-    .front {
-      background: #2c3e50;
-    }
-
-    .back {
-      background: #34495e;
-      transform: rotateY(180deg);
-    }
   </style>
 </head>
 <body>
   <div id="container">
     <div id="cardPack">
-      <div class="front"></div>
-      <div class="back"></div>
+      <div class="cardSide front"></div> <!-- Front of the pack -->
+      <div class="cardSide back"></div>  <!-- Back of the pack -->
     </div>
   </div>
 
   <script>
-    // Access the card elements
+    // Access the card pack and card sides
     const cardPack = document.getElementById('cardPack');
     const front = cardPack.querySelector('.front');
+    const back = cardPack.querySelector('.back');
+    
     let isDragging = false;
     let startX = 0;
     let moveX = 0;
@@ -81,27 +77,35 @@
     cardPack.addEventListener('mousedown', (e) => {
       isDragging = true;
       startX = e.clientX; // Record the initial mouse position
-      gsap.to(cardPack, { duration: 0.2, ease: 'power1.out', scale: 1.1 }); // Slight scale up effect on press
     });
 
-    // Mouse move event: while dragging, rotate the front of the card based on mouse position
+    // Mouse move event: while dragging, rotate the pack to simulate the "rip open"
     cardPack.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
 
       moveX = e.clientX - startX; // Calculate the horizontal mouse movement
-      const rotation = Math.min(45, Math.max(0, (moveX / 300) * 45)); // Max rotation of 45 degrees
+      const rotation = Math.min(180, Math.max(0, (moveX / 300) * 180)); // Max rotation of 180 degrees
 
-      // Use GSAP for smooth rotation of the front card
+      // Use GSAP for smooth rotation of the front side of the card pack
       gsap.to(front, { rotationY: rotation, duration: 0.1 });
+      gsap.to(back, { rotationY: rotation - 180, duration: 0.1 }); // Keep the back side rotated inversely
     });
 
     // Mouse up event: when user releases the mouse
     cardPack.addEventListener('mouseup', () => {
       isDragging = false;
 
-      // Smoothly reset the card back to its original state
-      gsap.to(cardPack, { duration: 0.5, scale: 1 }); // Reset scale
-      gsap.to(front, { rotationY: 0, duration: 0.5, ease: 'power1.out' }); // Reset rotation to 0
+      // Smoothly reset the card pack back to its original state
+      gsap.to(front, { rotationY: 0, duration: 0.5, ease: 'power1.out' }); // Reset front side rotation
+      gsap.to(back, { rotationY: 180, duration: 0.5, ease: 'power1.out' }); // Reset back side rotation
+    });
+
+    // Optional: Reset if mouse leaves the card pack area
+    cardPack.addEventListener('mouseleave', () => {
+      if (!isDragging) {
+        gsap.to(front, { rotationY: 0, duration: 0.5, ease: 'power1.out' });
+        gsap.to(back, { rotationY: 180, duration: 0.5, ease: 'power1.out' });
+      }
     });
   </script>
 </body>
